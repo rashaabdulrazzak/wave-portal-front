@@ -1,22 +1,8 @@
-import React,{useEffect} from "react";
+import React,{useEffect,useState} from "react";
 import { ethers } from "ethers";
 import './App.css';
 
 const getEthereumObject = () => window.ethereum;
-export default function App() {
-    /*
-   * The passed callback function will be run when the page loads.
-   * More technically, when the App component "mounts".
-   */
-  useEffect(() => {
-    const ethereum = getEthereumObject();
-    if (!ethereum) {
-      console.log("Make sure you have metamask!");
-    } else {
-      console.log("We have the ethereum object", ethereum);
-    }
-  }, []);
-
 /*
  * This function returns the first linked account found.
  * If there is no account linked, it will return null.
@@ -51,6 +37,42 @@ const findMetaMaskAccount = async () => {
     return null;
   }
 };
+export default function App() {
+  // create connect to wallet btn
+   const [currentAccount, setCurrentAccount] = useState("");
+
+  const connectWallet = async () => {
+    try {
+      const ethereum = getEthereumObject();
+      if (!ethereum) {
+        alert("Get MetaMask!");
+        return;
+      }
+
+      const accounts = await ethereum.request({
+        method: "eth_requestAccounts",
+      });
+
+      console.log("Connected", accounts[0]);
+      setCurrentAccount(accounts[0]);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+
+  /*
+   * This runs our function when the page loads.
+   * More technically, when the App component "mounts".
+   */
+  useEffect(async () => {
+    const account = await findMetaMaskAccount();
+    if (account !== null) {
+      setCurrentAccount(account);
+    }
+  }, []);
+
+
   const wave = () => {
     
   }
@@ -70,6 +92,14 @@ const findMetaMaskAccount = async () => {
         <button className="waveButton" onClick={wave}>
           Wave at Me
         </button>
+        {/*
+         * If there is no currentAccount render this button
+         */}
+        {!currentAccount && (
+          <button className="waveButton" onClick={connectWallet}>
+            Connect Wallet
+          </button>
+        )}
       </div>
     </div>
   );
