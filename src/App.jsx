@@ -1,6 +1,7 @@
 import React,{useEffect,useState} from "react";
 import { ethers } from "ethers";
 import './App.css';
+import abi from "./utils/WavePortal.json";
 
 const getEthereumObject = () => window.ethereum;
 /*
@@ -40,7 +41,12 @@ const findMetaMaskAccount = async () => {
 export default function App() {
   // create connect to wallet btn
    const [currentAccount, setCurrentAccount] = useState("");
-
+  const contractAddress ="0x0E1253744A28263303F8FB761Ac65E8B93ce802b";
+   /**
+   * Create a variable here that references the abi content!
+   */
+  const contractABI = abi.abi ;
+  
   const connectWallet = async () => {
     try {
       const ethereum = getEthereumObject();
@@ -73,9 +79,28 @@ export default function App() {
   }, []);
 
 
-  const wave = () => {
-    
-  }
+ const wave = async () => {
+    try {
+      const { ethereum } = window;
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        
+        /*
+        * You're using contractABI here
+        */
+        const wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
+
+        let count = await wavePortalContract.getTotalWaves();
+        console.log("Retrieved total wave count...", count.toNumber());
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+}
   
   return (
     <div className="mainContainer">
